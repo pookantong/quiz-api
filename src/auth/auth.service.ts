@@ -2,44 +2,47 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { SignInDto } from './dto/signIn.dto';
-import * as bcrypt from 'bcryptjs'
+import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from './dto/signUp.dto';
-
-
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
-    private jwtService: JwtService
-    ) {}
+    private jwtService: JwtService,
+  ) {}
 
-    async signUp(signUpDto: SignUpDto){
-      const user = await this.usersService.createUser(signUpDto)
+  async signUp(signUpDto: SignUpDto) {
+    const user = await this.usersService.createUser(signUpDto);
 
-      const token = this.jwtService.sign({username: user.username, email: user.email})
+    const token = this.jwtService.sign({
+      username: user.username,
+      email: user.email,
+    });
 
-      return {token}
-    }
-  
-    async login(signInDto: SignInDto):Promise<{token: string}>{
-      const {username, password} = signInDto
+    throw new HttpException('CREATE_SUCCESS', HttpStatus.OK);
+  }
 
-      const user = await this.usersService.findByUsername(username)
+  async login(signInDto: SignInDto): Promise<{ token: string }> {
+    const { username, password } = signInDto;
 
-      if(!user){
-        throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND)
-      }
+    const user = await this.usersService.findByUsername(username);
 
-      const isPasswordMatched = await bcrypt.compare(password, user.password)
-
-      if(!isPasswordMatched){
-        throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED)
-      }
-
-      const token = this.jwtService.sign({username: user.username, role: user.role})
-
-      return {token}
+    if (!user) {
+      throw new HttpException('USER_NOT_FOUND', HttpStatus.NOT_FOUND);
     }
 
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatched) {
+      throw new HttpException('INVALID_CREDENTIALS', HttpStatus.UNAUTHORIZED);
+    }
+
+    const token = this.jwtService.sign({
+      username: user.username,
+      role: user.role,
+    });
+
+    return { token };
+  }
 }

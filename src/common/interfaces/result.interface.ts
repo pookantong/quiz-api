@@ -1,8 +1,13 @@
 import { Question } from "@prisma/client";
 
+interface IResultQuestion {
+  name: string;
+  correctAnswer: string
+  score: number;
+}
+
 export interface IResult {
-  questions: Question[]
+  questions: IResultQuestion[]
   status: Boolean[]
-  correctAnswers: String[]
   score: Number
 }

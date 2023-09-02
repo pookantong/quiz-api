@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { QuestionService } from './questions.service';
-import { IQuestion } from 'src/common/interfaces/question.interface';
+import { IJSONQuestion } from 'src/common/interfaces/question.interface';
 
 @Controller('question')
 export class QuestionController {
@@ -12,7 +12,7 @@ export class QuestionController {
     quizId: number,
     @Query('page', ParseIntPipe)
     page: number,
-  ): Promise<IQuestion> {
-    return await this.questionService.findQuestionByPage(quizId, page);
+  ): Promise<IJSONQuestion> {
+    return {question: await this.questionService.findQuestionByPage(quizId, page)}
   }
 }

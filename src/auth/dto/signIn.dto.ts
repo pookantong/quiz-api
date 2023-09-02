@@ -4,10 +4,10 @@ export class SignInDto{
 
     @IsNotEmpty()
     @IsString()
-    username: string
+    readonly username: string
 
     @IsNotEmpty()
     @IsString()
-    password: string
+    readonly password: string
 
 }

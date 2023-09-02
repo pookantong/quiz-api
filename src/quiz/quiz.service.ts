@@ -1,11 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { IQuiz } from 'src/common/interfaces/quiz.interface';
+import { IEditorQuiz, IQuiz } from 'src/common/interfaces/quiz.interface';
 import { IResult } from 'src/common/interfaces/result.interface';
 import { CreateQuizDto } from './dto/create_quiz.dto';
 import { QuestionService } from 'src/question/questions.service';
 import { CreateQuestionDto } from 'src/question/dto/create_question.dto';
 import { User } from '@prisma/client';
+
+import { EditQuizDto } from './dto/edit_quiz.dto';
 
 @Injectable()
 export class QuizService {
@@ -58,12 +60,16 @@ export class QuizService {
   ): Promise<IResult> {
     const questions = await this.prisma.question.findMany({
       where: { quizId },
+      select: {
+        name: true,
+        correctAnswer: true,
+        score: true,
+      },
     });
     const quiz = await this.prisma.quiz.findUnique({
       where: { id: quizId },
     });
     const status = [];
-    const correctAnswers = [];
     let score = 0;
     for (const [index, answer] of answers.entries()) {
       if (answer === questions[index].correctAnswer) {
@@ -72,7 +78,6 @@ export class QuizService {
       } else {
         status.push(false);
       }
-      correctAnswers.push(questions[index].correctAnswer);
     }
     const completedQuiz = await this.prisma.completedQuiz.findUnique({
       where: {
@@ -107,21 +112,19 @@ export class QuizService {
         score: user.score,
       },
     });
-    //dev return interface questions fix
     return {
       questions,
       status,
-      correctAnswers,
       score,
     };
   }
 
   async createQuiz(createQuizDto: CreateQuizDto) {
-    const { name, questions } = createQuizDto;
+    const { name, questions, score } = createQuizDto;
     const quiz = await this.prisma.quiz.create({
       data: {
         name,
-        score: 0,
+        score,
       },
     });
     for (const question of questions) {
@@ -149,5 +152,31 @@ export class QuizService {
     await this.questionService.deleteQuestions(quizId);
     await this.prisma.quiz.delete({ where: { id: quizId } });
     throw new HttpException('DELETE_SUCCESS', HttpStatus.OK);
+  }
+
+  async getQuizEditor(quizId: number): Promise<IEditorQuiz> {
+    const quiz = await this.prisma.quiz.findUnique({ where: { id: quizId } });
+    const questions = await this.prisma.question.findMany({
+      where: { quizId },
+    });
+    return {
+      quiz,
+      questions,
+    };
+  }
+
+  async editQuiz(quizId: number, editQuizDto: EditQuizDto) {
+    const { questions, ...updatedQuiz } = editQuizDto;
+    await this.prisma.quiz.update({
+      where: { id: quizId },
+      data: { ...updatedQuiz },
+    });
+    for (const question of questions) {
+      const { questionId, ...updatedQuestion } = question;
+      await this.prisma.question.update({
+        where: { id: questionId },
+        data: { ...updatedQuestion },
+      });
+    }
   }
 }

@@ -7,7 +7,8 @@ export class CreateQuizDto {
   @IsString()
   name: string;
 
-  @IsEmpty()
+  @IsNotEmpty()
+  @IsNumber()
   score: number;
 
   @IsArray()

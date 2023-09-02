@@ -7,4 +7,5 @@ export default () => ({
   db: {
     URL: process.env.DATABASE_URL,
   },
+  allowedOrigin: process.env.ALLOWED_ORIGIN,
 });
