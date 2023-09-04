@@ -134,6 +134,9 @@ export class QuizService {
         score,
       },
     });
+    for (const question of questions) {
+      await this.questionService.createQuestion(question, quiz.id);
+    }
     throw new HttpException('CREATE_SUCCESS', HttpStatus.OK);
   }
 

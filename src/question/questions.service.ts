@@ -16,6 +16,7 @@ export class QuestionService {
         score: true,
       },
     });
+    console.log(questions);
     const progress = Math.round(((page - 1) / questions.length) * 100);
     const { choices, name, score } = questions[page - 1];
     const shuffleChoices = await this.shuffleArray(choices);
