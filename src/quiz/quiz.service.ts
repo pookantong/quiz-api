@@ -1,6 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
-import { IEditorQuiz, IQuiz } from 'src/common/interfaces/quiz.interface';
+import {
+  IEditorQuiz,
+  IJsonQuizzes,
+  IQuiz,
+} from 'src/common/interfaces/quiz.interface';
 import { IResult } from 'src/common/interfaces/result.interface';
 import { CreateQuizDto } from './dto/create_quiz.dto';
 import { QuestionService } from 'src/question/questions.service';
@@ -16,7 +20,7 @@ export class QuizService {
     private questionService: QuestionService,
   ) {}
 
-  async getQuiz(page, take, user): Promise<IQuiz[]> {
+  async getQuiz(page, take, user): Promise<IJsonQuizzes> {
     const completedQuizzes = await this.prisma.completedQuiz.findMany({
       where: { user },
     });
@@ -29,6 +33,9 @@ export class QuizService {
       take,
       skip: (page - 1) * take,
     });
+    const maxPage = Math.ceil(
+      (await this.prisma.quiz.findMany()).length / take,
+    );
 
     const responseQuizzes: IQuiz[] = [];
 
@@ -50,7 +57,7 @@ export class QuizService {
         });
       }
     }
-    return responseQuizzes;
+    return { quizzes: responseQuizzes, maxPage };
   }
 
   async checkAnswer(
@@ -126,14 +133,6 @@ export class QuizService {
         name,
         score,
       },
-    });
-    for (const question of questions) {
-      await this.questionService.createQuestion(question, quiz.id);
-      quiz.score += question.score;
-    }
-    await this.prisma.quiz.update({
-      where: { id: quiz.id },
-      data: { score: quiz.score },
     });
     throw new HttpException('CREATE_SUCCESS', HttpStatus.OK);
   }

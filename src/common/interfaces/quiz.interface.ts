@@ -1,10 +1,10 @@
-import { Question, Quiz } from "@prisma/client";
+import { Question, Quiz } from '@prisma/client';
 
-export interface IQuiz{
-  quizId: number           
-  name: string
-  score: number
-  completed: boolean  
+export interface IQuiz {
+  quizId: number;
+  name: string;
+  score: number;
+  completed: boolean;
 }
 
 export interface IEditorQuiz {
@@ -12,6 +12,7 @@ export interface IEditorQuiz {
   questions: Question[];
 }
 
-export interface IJsonQuizzes{
-  quizzes: IQuiz[]
+export interface IJsonQuizzes {
+  quizzes: IQuiz[];
+  maxPage: Number;
 }
